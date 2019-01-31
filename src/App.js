@@ -4,7 +4,7 @@ import { Query } from 'react-apollo';
 import client from './client';
 import { SEARCH_REPOSITORIES } from './graphql';
 
-const VARIABLES = {
+const DEFAULT_STATE = {
   first: 5,
   after: null,
   last: null,
@@ -15,12 +15,30 @@ const VARIABLES = {
 class App extends Component {
   constructor(props) {
     super(props);
-    this.state = VARIABLES;
+    this.state = DEFAULT_STATE;
   }
+
+  handleChange = e => {
+    this.setState({
+      query: e.target.value,
+    })
+  };
+
+  handleSubmit = e => {
+    e.preventDefault();
+  };
+
   render() {
     const { query, first, last, before, after } = this.state;
+    console.log(query);
     return (
       <ApolloProvider client={client}>
+        <form onSubmit={this.handleSubmit}>
+          <input
+            value={query}
+            onChange={this.handleChange}
+          />
+        </form>
         <Query
           query={SEARCH_REPOSITORIES}
           variables={{ query, first, last, before, after }}
