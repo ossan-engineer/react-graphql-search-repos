@@ -4,12 +4,13 @@ import { Query } from 'react-apollo';
 import client from './client';
 import { SEARCH_REPOSITORIES } from './graphql';
 
+const PER_PAGE = 5;
 const DEFAULT_STATE = {
-  first: 5,
+  first: PER_PAGE,
   after: null,
   last: null,
   before: null,
-  query: "フロントエンドエンジニア"
+  query: "フロントエンドエンジニア",
 };
 
 class App extends Component {
@@ -26,6 +27,15 @@ class App extends Component {
 
   handleSubmit = e => {
     e.preventDefault();
+  };
+
+  goNext = search => {
+    this.setState({
+      // first: PER_PAGE,
+      after: search.pageInfo.endCursor,
+      // last: null,
+      // before: null,
+    })
   };
 
   render() {
@@ -71,6 +81,12 @@ class App extends Component {
                       })
                     }
                   </ul>
+                  {console.log(search.pageInfo)}
+                  {search.pageInfo.hasNextPage && (
+                    <button onClick={() => this.goNext(search)}>
+                      Next
+                    </button>
+                  )}
                 </>
               )
             }
