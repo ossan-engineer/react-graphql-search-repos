@@ -65,7 +65,7 @@ class App extends Component {
                         } } = edge;
                         return (
                           <li key={id}>
-                            <a href={url} target="_blank">{name}</a>
+                            <a href={url} target="_blank" rel="noopener noreferrer">{name}</a>
                           </li>
                         )
                       })
