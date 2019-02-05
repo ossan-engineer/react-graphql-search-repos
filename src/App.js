@@ -29,12 +29,21 @@ class App extends Component {
     e.preventDefault();
   };
 
+  goPrevious = search => {
+    this.setState({
+      first: null,
+      after: null,
+      last: PER_PAGE,
+      before: search.pageInfo.startCursor,
+    })
+  }
+
   goNext = search => {
     this.setState({
-      // first: PER_PAGE,
+      first: PER_PAGE,
       after: search.pageInfo.endCursor,
-      // last: null,
-      // before: null,
+      last: null,
+      before: null,
     })
   };
 
@@ -82,6 +91,11 @@ class App extends Component {
                     }
                   </ul>
                   {console.log(search.pageInfo)}
+                  {search.pageInfo.hasPreviousPage && (
+                    <button onClick={() => this.goPrevious(search)}>
+                      Previous
+                    </button>
+                  )}
                   {search.pageInfo.hasNextPage && (
                     <button onClick={() => this.goNext(search)}>
                       Next
