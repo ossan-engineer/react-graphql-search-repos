@@ -1,12 +1,20 @@
-import React, { Component } from 'react';
+import React, { Component, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
 import { Query } from 'react-apollo';
 import client from './client';
 import { SEARCH_REPOSITORIES } from './graphql';
 
 const StarButton = props => {
-  const totalCount = props.node.stargazers.totalCount;
-  return <button>{totalCount === 1 ? `${totalCount} Star` : `${totalCount} Stars`}</button>;
+  const { node } = props;
+  const totalCount = node.stargazers.totalCount;
+  const viewerHasStarred = node.viewerHasStarred;
+  console.log({ viewerHasStarred });
+  const starCount = totalCount === 1 ? `${totalCount} Star` : `${totalCount} Stars`;
+  return (
+    <button>
+      {starCount} | {viewerHasStarred ? 'starred' : '-'}
+    </button>
+  );
 }
 
 const PER_PAGE = 5;
