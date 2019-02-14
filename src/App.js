@@ -25,7 +25,8 @@ const StarButton = props => {
               const newEdges = edges.map(edge => {
                 if (edge.node.id === node.id) {
                   const totalCount = edge.node.stargazers.totalCount;
-                  const diff = viewerHasStarred ? -1 : 1;
+                  // const diff = viewerHasStarred ? -1 : 1;
+                  const diff = starrable.viewerHasStarred ? 1 : -1;
                   const newTotalCount = totalCount + diff;
                   edge.node.stargazers.totalCount = newTotalCount; 
                 }
