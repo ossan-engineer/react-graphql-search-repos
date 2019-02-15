@@ -1,4 +1,4 @@
-import React, { Component, useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { ApolloProvider, Mutation, Query } from 'react-apollo';
 import client from './client';
 import { ADD_STAR, REMOVE_STAR, SEARCH_REPOSITORIES } from './graphql';
@@ -53,108 +53,96 @@ const StarButton = props => {
   );
 }
 
-const PER_PAGE = 5;
-const DEFAULT_STATE = {
-  first: PER_PAGE,
-  after: null,
-  last: null,
-  before: null,
-  query: "",
-};
+const App = props => {
+  const PER_PAGE = 5;
+  const [query, setQuery] = useState('');
+  const [first, setFirst] = useState(PER_PAGE);
+  const [after, setAfter] = useState(null);
+  const [last, setLast] = useState(null);
+  const [before, setBefore] = useState(null);
+  const input = useRef();
 
-class App extends Component {
-  constructor(props) {
-    super(props);
-    this.state = DEFAULT_STATE;
-    this.myRef = React.createRef();
-  }
-
-  handleSubmit = e => {
+  const handleSubmit = e => {
     e.preventDefault();
-    this.setState({
-      query: this.myRef.current.value
-    });
+    setQuery(input.current.value);
+    setFirst(PER_PAGE);
+    setAfter(null);
+    setLast(null);
+    setBefore(null);
   };
 
-  goPrevious = search => {
-    this.setState({
-      first: null,
-      after: null,
-      last: PER_PAGE,
-      before: search.pageInfo.startCursor,
-    })
+  const goPrevious = search => {
+    setFirst(null);
+    setAfter(null);
+    setLast(PER_PAGE);
+    setBefore(search.pageInfo.startCursor);
   }
 
-  goNext = search => {
-    this.setState({
-      first: PER_PAGE,
-      after: search.pageInfo.endCursor,
-      last: null,
-      before: null,
-    })
+  const goNext = search => {
+    setFirst(PER_PAGE);
+    setAfter(search.pageInfo.endCursor);
+    setLast(null);
+    setBefore(null);
   };
 
-  render() {
-    const { query, first, last, before, after } = this.state;
-    return (
-      <ApolloProvider client={client}>
-        <form onSubmit={this.handleSubmit}>
-          <input ref={this.myRef} />
-          <input type="submit" value="Submit" onSubmit={this.handleSubmit} />        
-        </form>
-        <Query
-          query={SEARCH_REPOSITORIES}
-          variables={{ query, first, last, before, after }}
-        >
-          {
-            ({ loading, error, data }) => {
-              if (loading) return 'Loading...';
-              if (error) return `Error! ${error.message}`;
-              const { search } = data;
-              const { repositoryCount } = search;
-              const repositoryUnit = repositoryCount === 1 ? 'Repository' : 'Repositories'
-              const title = `GitHub ${repositoryUnit} Search Result - ${repositoryCount}`
-              return (
-                <>
-                  <h2>{title}</h2>
-                  <ul>
-                    {
-                      search.edges.map(edge => {
-                        const { node: {
-                          id,
-                          url,
-                          name,
-                        } } = edge;
-                        return (
-                          <li key={id}>
-                            <a href={url} target="_blank" rel="noopener noreferrer">{name}</a>
-                            &nbsp;
-                            <StarButton
-                              node={edge.node}
-                              {...{ query, first, last, before, after }} />
-                          </li>
-                        )
-                      })
-                    }
-                  </ul>
-                  {search.pageInfo.hasPreviousPage && (
-                    <button onClick={() => this.goPrevious(search)}>
-                      Previous
-                    </button>
-                  )}
-                  {search.pageInfo.hasNextPage && (
-                    <button onClick={() => this.goNexts(search)}>
-                      Next
-                    </button>
-                  )}
-                </>
-              )
-            }
+  return (
+    <ApolloProvider client={client}>
+      <form onSubmit={handleSubmit}>
+        <input ref={input} />
+        <input type="submit" value="Submit" onSubmit={handleSubmit} />        
+      </form>
+      <Query
+        query={SEARCH_REPOSITORIES}
+        variables={{ query, first, last, before, after }}
+      >
+        {
+          ({ loading, error, data }) => {
+            if (loading) return 'Loading...';
+            if (error) return `Error! ${error.message}`;
+            const { search } = data;
+            const { repositoryCount } = search;
+            const repositoryUnit = repositoryCount === 1 ? 'Repository' : 'Repositories'
+            const title = `GitHub ${repositoryUnit} Search Result - ${repositoryCount}`
+            return (
+              <>
+                <h2>{title}</h2>
+                <ul>
+                  {
+                    search.edges.map(edge => {
+                      const { node: {
+                        id,
+                        url,
+                        name,
+                      } } = edge;
+                      return (
+                        <li key={id}>
+                          <a href={url} target="_blank" rel="noopener noreferrer">{name}</a>
+                          &nbsp;
+                          <StarButton
+                            node={edge.node}
+                            {...{ query, first, last, before, after }} />
+                        </li>
+                      )
+                    })
+                  }
+                </ul>
+                {search.pageInfo.hasPreviousPage && (
+                  <button onClick={() => goPrevious(search)}>
+                    Previous
+                  </button>
+                )}
+                {search.pageInfo.hasNextPage && (
+                  <button onClick={() => goNext(search)}>
+                    Next
+                  </button>
+                )}
+              </>
+            )
           }
-        </Query>
-      </ApolloProvider>
-    );
-  }
+        }
+      </Query>
+    </ApolloProvider>
+  );
 }
 
 export default App;
